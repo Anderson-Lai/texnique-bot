@@ -970,33 +970,8 @@ for (let i = 1; i < 33; i++) {
 
 // average number of problems solved
 // in the 3-minute mode
-let scaling = 96;
+let scaling = 95;
 
 for (const key in expectedValues) {
     console.log(`At least ${key}: ${scaling * expectedValues[key]}`);
 }
-
-/* 
-{
-  '1': 2,
-  '2': 6,
-  '3': 9,
-  '4': 15,
-  '5': 22,
-  '6': 19,
-  '7': 16,
-  '8': 24,
-  '9': 14,
-  '10': 8,
-  '11': 8,
-  '12': 9,
-  '13': 11,
-  '14': 8,
-  '15': 5,
-  '16': 5,
-  '17': 1,
-  '21': 1,
-  '22': 1,
-  '33': 1
-}
-*/

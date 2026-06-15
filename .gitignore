@@ -1,0 +1,10 @@
+*
+!.gitignore
+!manifest.json
+!questions.js
+!statistics.js
+!texnique.js
+!texnique.tex
+!references.bib
+!texnique.pdf
+!README.md

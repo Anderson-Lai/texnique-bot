@@ -1,4 +1,4 @@
-const MINIMUM_POINT_VALUE = 16;
+const MINIMUM_POINT_VALUE = 16; // see texnique.pdf as to how this number was calculated
 const POLLING_TIMEOUT = 50;
 
 function getTitle() {
