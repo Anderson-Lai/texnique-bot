@@ -71,9 +71,7 @@ let titleObserver = new MutationObserver(() => {
     // in the case that the target loads before
     // we can input a solution, we add this as a fallback
     setTimeout(() => {
-        for (let i = 0; i < 5; i++) {
-            dispatchChangeEvent();
-        }
+        dispatchChangeEvent();
     }, 10 * POLLING_TIMEOUT);
 
     // setup detection change in target (i.e., the target
@@ -105,7 +103,6 @@ titleObserver.observe(problemTitle, {
     characterData: true,
     subtree: true
 });
-
 
 const gameWindow = document.getElementById("game-window");
 
