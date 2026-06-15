@@ -1,4 +1,4 @@
-const MINIMUM_POINT_VALUE = 13;
+const MINIMUM_POINT_VALUE = 16;
 const POLLING_TIMEOUT = 50;
 
 function getTitle() {
