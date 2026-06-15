@@ -1,4 +1,5 @@
-const MINIMUM_POINT_VALUE = 10;
+const MINIMUM_POINT_VALUE = 13;
+const POLLING_TIMEOUT = 50;
 
 function getTitle() {
     let text = document.getElementById("problem-title").textContent;
@@ -25,9 +26,17 @@ function skipProblem() {
     document.getElementById("skip-button").click();
 }
 
+function dispatchChangeEvent() {
+    let input = document.getElementById("user-input");
+    input.dispatchEvent(new Event('change', {
+        bubbles: true
+    }));
+}
+
 function solve(minimumPoints) {
-    let title = getTitle();
-    let pointValue = getProblemValue();
+    const title = getTitle();
+    const pointValue = getProblemValue();
+    const oldTarget = document.getElementById("target").innerHTML;
 
     if (pointValue < minimumPoints) {
         skipProblem();
@@ -46,13 +55,6 @@ function solve(minimumPoints) {
         // enter solution since problem title can be found
         let input = document.getElementById("user-input");
         input.value = solution;
-
-        // force an update until problem changes
-        do {
-            input.dispatchEvent(new Event('change', {
-                bubbles: true
-            }));
-        } while (getProblemTitle() === title);
     }
 
     if (!found) {
@@ -63,8 +65,40 @@ function solve(minimumPoints) {
 
 const problemTitle = document.getElementById("problem-title");
 
+// we assume that we can find the problem and input the solution
+// into the textbox BEFORE the target finishes loading
 let titleObserver = new MutationObserver(() => {
+    // in the case that the target loads before
+    // we can input a solution, we add this as a fallback
+    setTimeout(() => {
+        for (let i = 0; i < 5; i++) {
+            dispatchChangeEvent();
+        }
+    }, 10 * POLLING_TIMEOUT);
+
+    // setup detection change in target (i.e., the target
+    // has been loaded so that we can solve the problem)
+    let targetContainer = document.getElementById("target");
+
+    let timeout;
+    let targetObserver = new MutationObserver(() => {
+       clearTimeout(timeout);
+
+       timeout = setTimeout(() => {
+           targetObserver.disconnect();
+           dispatchChangeEvent();
+       }, POLLING_TIMEOUT);
+    });
+
     solve(MINIMUM_POINT_VALUE);
+
+    // begin detecting changes
+    targetObserver.observe(targetContainer, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        characterData: true
+    })
 });
 titleObserver.observe(problemTitle, {
     childList: true,
@@ -87,7 +121,8 @@ let windowObserver = new MutationObserver(() => {
         subtree: true
     });
     // since the site only just reveals the question, not changing the question,
-    // so we need to manually force a change in order to start the cycle
+    // we need to manually force a change (which the titleObserver detects) 
+    // in order to start the problem-solving loop
     skipProblem();
 })
 windowObserver.observe(gameWindow, {

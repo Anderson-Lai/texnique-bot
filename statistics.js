@@ -935,6 +935,7 @@ for (const problem of problems) {
 console.log(statistics);
 
 /* 
+average problems solved: 103.6
 {
   '1': 2,
   '2': 6,
