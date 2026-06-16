@@ -5,7 +5,7 @@ const MINIMUM_POINT_VALUE = 17;
 const POLLING_TIMEOUT = 75;
 const FALLBACK_FACTOR = 10;
 
-const MAXIMUM_SCORE = 200;
+const MAXIMUM_SCORE = 2000;
 const SCORE_OFFSET = 50;
 
 const POINT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
@@ -51,39 +51,50 @@ function dispatchChangeEvent() {
     }));
 }
 
-function solve(minimumPoints, score) {
-    const title = getTitle();
-    const pointValue = getProblemValue();
-    console.log(score);
-
+function pruneProblem(minimumPoints, score, pointValue) {
     // if this condition is met, we greedily prune problems
-    // to reach the maximum score exactly
+    // to reach the maximum score exactly since we are 
+    // already close to the maximum score
     if (score >= MAXIMUM_SCORE - SCORE_OFFSET) {
         const neededScore = MAXIMUM_SCORE - score;
-        console.log(`in; neededScore: ${neededScore}, pointValue: ${pointValue}`);
-
         for (const points of POINT_OPTIONS) {
             let remainingScore = neededScore - points;
-            if (remainingScore >= 0 && points > targetScore) {
+
+            if (remainingScore < 0) {
+                break;
+            }
+
+            // greedy part
+            if (points > targetScore) {
                 targetScore = points;
             }
         }
 
-        console.log(`in the first branch; targetScore: ${targetScore}`);
         if (pointValue != targetScore) {
             skipProblem();
-            return 0;
+            return false;
         }
-        targetScore = 0;
     }
-    // skip the problem if it does not
-    // meet the minimum point threshold
+    // skip since problem's points are below the
+    // minimum point threshold
     else if (pointValue < minimumPoints) {
         skipProblem();
+        return false;
+    }
+
+    return true;
+}
+
+function solve(minimumPoints, score) {
+    const pointValue = getProblemValue();
+
+    if (!pruneProblem(minimumPoints, score, pointValue)) {
         return 0;
     }
-    
+
+    const title = getTitle();
     let found = false;
+
     for (const problem of globalThis.questions) {
         if (problem.title != title) {
             continue;
@@ -102,24 +113,30 @@ function solve(minimumPoints, score) {
         return 0;
     }
 
+    // since problem could be solved,
+    // reset the targetScore
+    targetScore = 0;
+
     return pointValue;
 }
 
 const problemTitle = document.getElementById("problem-title");
 
-// we assume that we can find the problem and input the solution
-// into the textbox BEFORE the target finishes loading
 let titleObserver = new MutationObserver(() => {
+    // end game condition
     if (totalScore === MAXIMUM_SCORE) {
         endGame();
         return;
     }
 
-    // in the case that the target loads before
-    // we can input a solution, we add this as a fallback
+    // in case the target loads before we can
+    // input a solution, we add this as a fallback
     setTimeout(() => {
         dispatchChangeEvent();
     }, FALLBACK_FACTOR * POLLING_TIMEOUT);
+
+    // we now assume that we can find the problem and input the solution
+    // into the textbox BEFORE the target finishes loading
 
     // setup detection change in target (i.e., the target
     // has been loaded so that we can solve the problem)
