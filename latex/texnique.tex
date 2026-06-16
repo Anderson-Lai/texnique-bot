@@ -133,14 +133,14 @@ As expected, the expected value increases as the MPV increases. However, this is
     \caption{Expected Value After 3 Minutes}\label{table:final_expected_value}
 \end{table}
 
-Our desired MPV immediately becomes obvious: $17$. It meets the leaderboard cap of $2000$ points by a margin of $200$ points ($10\%$), whilst not exceeding the cap by too much, avoiding having to skip too many problems (addressing issues $2$ and $3$). This margin also provides a buffer to account for the ignoring of the time-penalty issue (issue $2$).
-
-Yet, there is one small issue. Currently, the bot does not know how to stop itself when it reaches $2000$ points. Furthermore, it does not know how to prune a problem with the exact number of points to reach $2000$ points as the accumulated score approaches the leaderboard cap. As such, the bot will, without a second thought, readily burst past the leaderboard cap of $2000$ points. Moreover, with the MPV set to $17$ points, the end screen oftentimes begins to slow down and stall and is on the verge of crashing.
-
 \section{Conclusion}
-Therefore, with the current implementation of the bot, it is actually optimal to set the MPV at \textbf{16 points}. This ensures that the expected score is below $2000$ points, so that the score can always be submitted to the leaderboard. Referring to Table~\ref{table:question_count}, there are only $4$ problems that are at least $17$ points. By decreasing the MPV to $16$ points, the number of available problems increases from $4$ to $9$ (a $125\%$ increase). Thus, the quantity of problems that must be skipped is drastically reduced, addressing issues $2$ and $3$.
+Our desired MPV immediately becomes obvious: \textbf{17}. It meets the leaderboard cap of $2000$ points by a margin of $200$ points ($10\%$), whilst not exceeding the cap by too much, avoiding having to skip too many problems (addressing issues $2$ and $3$). This margin also provides a buffer to account for the ignoring of the time-penalty issue (issue $2$).
 
-In the future, when specific pruning for the final few problems nearing $2000$ total points is implemented, the MPV may be raised to $17$ points. This will allow for the score to always be submitted to the leaderboard and also limit the possibility of crashing (addressing issues $1$ and $3$). This is because lower value problems can be solved and fewer problems must be skipped as the final part of the game may be completely skipped due to already having reached $2000$ points. Hence, the loading demands of the end screen will be reduced.
+However, there is some criticism of this MPV. With the current implementation of the bot, pruning only for questions with points $\geq 17$ does have a small, but noticeable, time penalty. Mathematically, the number of available problems decreases from $9$ problems ($\approx 4.86\%$ of problems) to only $4$ problems ($\approx 2.16\%$ of problems)! 
+
+Moreover, when pruning for the last few problems to reach exactly $2000$ points, the bot prunes for the highest point problem that does not exceed $2000$ points. This leads to an increase in the number of skipped problems, as the majority of the time, the $33$ point problem is being pruned for, and there is only $1$ of this type of problem. 
+
+Nevertheless, whilst the end screen does experience meaningful lag with the MPV set to $17$, it is not enough to fully crash the browser. Hence, setting the MPV to $17$ is a valid and acceptable solution.
 
 \newpage
 \printbibliography
