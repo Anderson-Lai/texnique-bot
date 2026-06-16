@@ -93,25 +93,13 @@ function solve(minimumPoints, score) {
     }
 
     const title = getTitle();
-    let found = false;
-
-    for (const problem of globalThis.questions) {
-        if (problem.title != title) {
-            continue;
-        }
-    
-        found = true;
-        const solution = problem.latex;
-        
-        // enter solution since problem title can be found
-        let input = document.getElementById("user-input");
-        input.value = solution;
-    }
-
-    if (!found) {
+    if (!(title in globalThis.questions)) {
         skipProblem();
         return 0;
     }
+
+    let input = document.getElementById("user-input");
+    input.value = globalThis.questions[title];
 
     // since problem could be solved,
     // reset the targetScore
