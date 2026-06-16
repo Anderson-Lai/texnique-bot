@@ -1,5 +1,19 @@
-const MINIMUM_POINT_VALUE = 16; // see texnique.pdf as to how this number was calculated
-const POLLING_TIMEOUT = 50;
+// see latex/texnique.pdf for how this number
+// was calculated
+const MINIMUM_POINT_VALUE = 17; 
+
+const POLLING_TIMEOUT = 75;
+const FALLBACK_FACTOR = 10;
+
+const MAXIMUM_SCORE = 200;
+const SCORE_OFFSET = 50;
+
+const POINT_OPTIONS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14,
+    15, 16, 17, 21, 22, 33
+];
+
+let totalScore = 0;
+let targetScore = 0;
 
 function getTitle() {
     let text = document.getElementById("problem-title").textContent;
@@ -19,11 +33,15 @@ function getProblemValue() {
     let components = points.split("");
     components.splice(0, 1);
 
-    return components.join("").split(" ")[0];
+    return Number(components.join("").split(" ")[0]);
 }
 
 function skipProblem() {
     document.getElementById("skip-button").click();
+}
+
+function endGame() {
+    document.getElementById("end-game-button").click();
 }
 
 function dispatchChangeEvent() {
@@ -33,14 +51,36 @@ function dispatchChangeEvent() {
     }));
 }
 
-function solve(minimumPoints) {
+function solve(minimumPoints, score) {
     const title = getTitle();
     const pointValue = getProblemValue();
-    const oldTarget = document.getElementById("target").innerHTML;
+    console.log(score);
 
-    if (pointValue < minimumPoints) {
+    // if this condition is met, we greedily prune problems
+    // to reach the maximum score exactly
+    if (score >= MAXIMUM_SCORE - SCORE_OFFSET) {
+        const neededScore = MAXIMUM_SCORE - score;
+        console.log(`in; neededScore: ${neededScore}, pointValue: ${pointValue}`);
+
+        for (const points of POINT_OPTIONS) {
+            let remainingScore = neededScore - points;
+            if (remainingScore >= 0 && points > targetScore) {
+                targetScore = points;
+            }
+        }
+
+        console.log(`in the first branch; targetScore: ${targetScore}`);
+        if (pointValue != targetScore) {
+            skipProblem();
+            return 0;
+        }
+        targetScore = 0;
+    }
+    // skip the problem if it does not
+    // meet the minimum point threshold
+    else if (pointValue < minimumPoints) {
         skipProblem();
-        return;
+        return 0;
     }
     
     let found = false;
@@ -59,8 +99,10 @@ function solve(minimumPoints) {
 
     if (!found) {
         skipProblem();
-        return;
+        return 0;
     }
+
+    return pointValue;
 }
 
 const problemTitle = document.getElementById("problem-title");
@@ -68,11 +110,16 @@ const problemTitle = document.getElementById("problem-title");
 // we assume that we can find the problem and input the solution
 // into the textbox BEFORE the target finishes loading
 let titleObserver = new MutationObserver(() => {
+    if (totalScore === MAXIMUM_SCORE) {
+        endGame();
+        return;
+    }
+
     // in the case that the target loads before
     // we can input a solution, we add this as a fallback
     setTimeout(() => {
         dispatchChangeEvent();
-    }, 10 * POLLING_TIMEOUT);
+    }, FALLBACK_FACTOR * POLLING_TIMEOUT);
 
     // setup detection change in target (i.e., the target
     // has been loaded so that we can solve the problem)
@@ -88,7 +135,7 @@ let titleObserver = new MutationObserver(() => {
        }, POLLING_TIMEOUT);
     });
 
-    solve(MINIMUM_POINT_VALUE);
+    totalScore += solve(MINIMUM_POINT_VALUE, totalScore);
 
     // begin detecting changes
     targetObserver.observe(targetContainer, {
@@ -108,7 +155,10 @@ const gameWindow = document.getElementById("game-window");
 
 let windowObserver = new MutationObserver(() => {
     if (getComputedStyle(gameWindow).display === "none") {
+        // cleanup and prepare for the next game
         titleObserver.disconnect();
+        totalScore = 0;
+        targetScore = 0;
         return;
     }
 

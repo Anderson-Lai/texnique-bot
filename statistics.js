@@ -932,6 +932,9 @@ for (const problem of problems) {
     statistics[Math.ceil(problem.latex.length / 10.0)] = (!statistics[Math.ceil(problem.latex.length / 10.0)] ? 1 : statistics[Math.ceil(problem.latex.length / 10.0)] + 1);
 }
 
+console.log(statistics);
+console.log();
+
 function statisticsToProbabilities(statistics) {
     let totalTrials = 0;
     for (const key in statistics) {
